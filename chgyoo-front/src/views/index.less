@@ -1,0 +1,31 @@
+.single-page-con{
+  overflow: auto;
+  background-color: #FFF;
+  z-index: 1;
+  transition: left .2s;
+  .single-page{
+    margin: 0px;
+  }
+}
+
+.index {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  text-align: left;
+  background-color: #ecf0f5;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  .ivu-layout{
+    height: 100%; /*布局自适应屏幕高度*/
+  };
+  .ivu-layout-content{
+    background-color: #ecf0f5;
+  };
+  /* 面包屑和内容的分割线上下边距 */
+  .ivu-divider-horizontal {
+    margin: 8px 0 12px 0;
+  }
+}

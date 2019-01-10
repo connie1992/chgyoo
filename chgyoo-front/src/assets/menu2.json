@@ -1,0 +1,82 @@
+{
+  "children": [
+    {
+      "id": "56abbd21aa5640d19f8ea99615d90834",
+      "name": "demo",
+      "url": "demo",
+      "menuIcon": " iconfont icon-shoucang",
+      "component": "demo/demo",
+      "children": [],
+      "permission": ["edit", "delete"]
+    },
+    {
+      "id": "56abbd21aa5640d19f8ea99615d90834",
+      "name": "系统设置",
+      "url": "sysconfig",
+      "menuIcon": " iconfont icon-shezhi1",
+      "component": "index",
+      "children": [
+        {
+          "id": "b2c4564250364f6e8879014048cdf653",
+          "name": "菜单权限",
+          "url": "sysconfig/permission",
+          "component": "setting/permission",
+          "menuIcon": " iconfont icon-menu",
+          "children": [
+            {
+              "id": "b2c4564250364f6909i3e814048cdf253",
+              "name": "菜单设置",
+              "url": "sysconfig/permission/menus",
+              "component": "setting/menu-manage",
+              "menuIcon": "fa fa-sign-in",
+              "children": []
+            },
+            {
+              "id": "b2c4564250364f6e87e814048cdf153",
+              "name": "角色管理",
+              "url": "sysconfig/permission/role",
+              "component": "setting/role-manage",
+              "menuIcon": "fa fa-sign-in",
+              "children": []
+            },
+            {
+              "id": "b2c4564250364ui8f3e814048cd2653",
+              "name": "角色授权",
+              "url": "sysconfig/permission/userRole",
+              "component": "setting/role-set",
+              "menuIcon": "fa fa-sign-in",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "b2c4564250364f6e8879014048cdf653",
+          "name": "数据权限",
+          "url": "sysconfig/dataSetting",
+          "component": "setting/data-setting",
+          "menuIcon": " iconfont icon-data",
+          "children": []
+        },
+        {
+          "id": "b234564250454f6e8879014048cdf653",
+          "name": "系统参数",
+          "url": "sysconfig/params",
+          "component": "setting/params",
+          "menuIcon": " iconfont icon-params",
+          "children": []
+        },
+        {
+          "id": "b234564250454f6e8879014048cdf653",
+          "name": "通知公告",
+          "url": "sysconfig/publicNotice",
+          "component": "setting/public-notice",
+          "menuIcon": " iconfont icon-notice",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "errorMessage": null,
+  "hasErrors": false,
+  "success": true
+}
