@@ -1,13 +1,18 @@
 server:
   port: 8762
 spring:
+  profiles:
+    active: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/chgyoo?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
     username: root
     password: 123456
-  profiles:
-    active: dev
+  redis:
+    shiro:
+      host: 127.0.0.1
+      port: 6379
+      timeout: 0
 #日志配置
 
 logging:
