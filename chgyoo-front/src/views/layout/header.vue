@@ -7,7 +7,7 @@
     <Header :style="{'z-index': '10001', boxShadow: '0 2px 3px 2px rgba(0,0,0,.1)'}">
             <span class="logo-title col-btn"><slot></slot></span>
             <span class="logo-title logo-lg"></span>
-            <span class="logo-title" style="color: white;font-size: 19px;font-weight: bold">全面预算管理</span>
+            <span class="logo-title" style="color: white;font-size: 19px;font-weight: bold">chgyoo</span>
         <nav>
             <div class="navbar-custom-menu">
                 <!-- 登出-->
