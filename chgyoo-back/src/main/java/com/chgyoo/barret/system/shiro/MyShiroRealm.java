@@ -1,9 +1,12 @@
 package com.chgyoo.barret.system.shiro;
 
 import com.alibaba.fastjson.JSON;
+import com.chgyoo.barret.entity.Role;
 import com.chgyoo.barret.entity.User;
+import com.chgyoo.barret.mapper.RoleMapper;
 import com.chgyoo.barret.mapper.UserMapper;
 import com.chgyoo.barret.model.Command;
+import com.chgyoo.barret.service.RoleService;
 import com.chgyoo.barret.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
@@ -13,6 +16,8 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -26,6 +31,11 @@ public class MyShiroRealm extends AuthorizingRealm {
     private UserMapper userMapper;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoleService roleService;
+
+    @Resource
+    private RoleMapper roleMapper;
 
     /**
      * 主要是用来进行身份认证的，即验证用户输入的账号和密码是否正确
@@ -55,10 +65,11 @@ public class MyShiroRealm extends AuthorizingRealm {
         log.info("权限认证，从登录凭证中获取用户信息，principals={}", JSON.toJSONString(principals));
         Command command = (Command) principals.getPrimaryPrincipal();
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-        // 查询角色信息
-//        Collection<String> roles = userService.getSelectRole(command);
-//        log.info("查询用户角色信息并添加到shiro权限验证器中，一个用户可以对应多个角色");
-//        info.addRoles(roles);
+        // 查询用户角色信息并添加到shiro权限验证器中，一个用户可以对应多个角色
+        Role role = roleMapper.selectByRoleId(command.getRoleId());
+        Collection<String> roles = new ArrayList<>();
+        roles.add(role.getCode());
+        info.addRoles(roles);
         // 查询权限信息
 //        Collection<String> permissions = userService.getUserPermission(command);
 //        log.info("把用户权限信息添加到shiro权限过滤器中");

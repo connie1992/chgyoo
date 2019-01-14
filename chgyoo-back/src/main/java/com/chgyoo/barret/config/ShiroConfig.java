@@ -1,5 +1,9 @@
 package com.chgyoo.barret.config;
 
+import com.chgyoo.barret.entity.Role;
+import com.chgyoo.barret.mapper.RoleMapper;
+import com.chgyoo.barret.service.RoleService;
+import com.chgyoo.barret.service.UserService;
 import com.chgyoo.barret.system.shiro.MySessionManager;
 import com.chgyoo.barret.system.shiro.MyShiroRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
@@ -12,11 +16,14 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.Resource;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +41,14 @@ public class ShiroConfig {
     @Value("${spring.redis.shiro.timeout}")
     private int timeout;
 
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private RoleService roleService;
+
+    @Resource
+    private RoleMapper roleMapper;
+
     /**
      * 一.请求拦截
      * @param securityManager
@@ -50,11 +65,16 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/web/logout", "anon");
         filterChainDefinitionMap.put("/web/login", "anon");
         //authc. 配置拦截的请求
-        filterChainDefinitionMap.put("/web/**", "authc");
+        // filterChainDefinitionMap.put("/permission/**", "authc");
 
-        // 支持多个角色，多个权限，[]中用","分隔
-        filterChainDefinitionMap.put("/user/**", "authc,roles[ROLE_USER]");//用户为ROLE_USER 角色可以访问。由用户角色控制用户行为。
-        filterChainDefinitionMap.put("/user/edit/**", "authc,perms[user:edit]");// 这里为了测试，固定写死的值，也可以从数据库或其他配置中读取，此处是用权限控制
+        // roles：正常情况下URL路径的拦截设置如下:
+        // /admins/user/**=roles[admin]
+        // 参数可以写多个，多个时必须加上引号，并且参数之间用逗号分割，当有多个参数时，例如/admins/user/**=roles[“admin,guest”]
+        // 但是这个设置方法是需要每个参数满足才算通过，相当于hasAllRoles()方法。也就是我们的角色必须同时拥有admin和guest权限才可以。
+        // List<Role> roles = roleMapper.selectAllRole();
+
+        filterChainDefinitionMap.put("/permission/**", "authc,roles[admin]");//用户为ROLE_USER 角色可以访问。由用户角色控制用户行为。
+//        filterChainDefinitionMap.put("/user/edit/**", "authc,perms[user:edit]");// 这里为了测试，固定写死的值，也可以从数据库或其他配置中读取，此处是用权限控制
 
 
         //配置shiro默认登录界面地址，前后端分离中登录界面跳转应由前端路由控制，后台仅返回json数据
