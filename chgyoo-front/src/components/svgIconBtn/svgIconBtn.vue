@@ -1,9 +1,22 @@
 <template>
     <!-- 彩色图标 -->
-    <Button :size="btnSize" @click="btnClick" :style="{height: height}" :type="type" :disabled="disabled" :loading="loading">
-        <SvgIcon :icon-text="iconText"></SvgIcon>
-        <span :style="{fontSize: fontSize}"> {{btnText}}</span>
-    </Button>
+    <span>
+    <template v-if="tip.length > 0">
+        <Tooltip :content="tip" transfer theme="dark">
+            <Button :size="btnSize" @click="btnClick" :style="{height: height}" :type="type" :disabled="disabled" :loading="loading">
+                <SvgIcon :icon-text="iconText"></SvgIcon>
+                <span :style="{fontSize: fontSize}"> {{btnText}}</span>
+            </Button>
+        </Tooltip>
+    </template>
+    <template v-else>
+        <Button :size="btnSize" @click="btnClick" :style="{height: height}" :type="type" :disabled="disabled" :loading="loading">
+            <SvgIcon :icon-text="iconText"></SvgIcon>
+            <span :style="{fontSize: fontSize}"> {{btnText}}</span>
+        </Button>
+    </template>
+    </span>
+
 </template>
 
 <script>
@@ -15,7 +28,7 @@
       },
       btnText: {
         type: String,
-        default: '彩色图标按钮'
+        default: ''
       },
       btnSize: {
         type: String,
@@ -44,17 +57,24 @@
       loading: {
         type: Boolean,
         default: false
+      },
+      tip: {
+        type: String,
+        default: ''
       }
     },
     data() {
-      return {};
+      return {
+      };
     },
     methods: {
       btnClick() {
-        this.$emit(`${this.btnName}-click`);
+        this.$emit('click');
       }
     },
-    watch: {},
+    watch: {
+
+    },
     computed: {
       iconID: function () {
         return `#icon-${this.iconText}`;

@@ -8,8 +8,8 @@
                     <Input search enter-button v-model="orgSearchKey" style="width: 180px" size="small" @on-search="orgSearch"/>
                         </span>
                     <span style="display: inline-block;position: relative;top:-7px">
-                    <Button type="primary" size="small" @click="setRole(1)">按组授权</Button>
-                        </span>
+                        <SvgIconBtn icon-text="members" tip="点击选中组织，设置组织的角色" btn-text="按组授权" @click="setRole(1)" :disabled="!selectedDept.id"></SvgIconBtn>
+                    </span>
                 </div>
                 <Row>
                     <!-- 组织架构树 -->
@@ -42,8 +42,8 @@
                         <span style="display: inline-block;">
                             <Input search enter-button v-model="groupOpts.searchKey" style="width: 180px;" size="small" @on-search="getGroupTableData"/>
                         </span>
-                        <span style="display: inline-block;position: relative;top: -6px">
-                            <Button type="primary" size="small" @click="addGroup">新建</Button>
+                        <span style="display: inline-block;position: relative;top: -7px">
+                            <SvgIconBtn iconText="add-copy" btn-text="新建" @click="addGroup"></SvgIconBtn>
                         </span>
                     </div>
                     <tables ref="groupTable" showIndex :loading="groupOpts.loading" :columns="groupOpts.columns" :total="groupOpts.total"
@@ -60,8 +60,8 @@
                         <span style="display: inline-block;">
                             <Input search enter-button v-model="cusUserOpts.searchKey" style="width: 180px;" size="small" @on-search="getCusUserTableData"/>
                         </span>
-                        <span style="display: inline-block;position: relative;top: -6px">
-                            <Button type="primary" size="small" @click="addCusUser">新建</Button>
+                        <span style="display: inline-block;position: relative;top: -7px">
+                            <SvgIconBtn iconText="add-copy" btn-text="新建" @click="addCusUser"></SvgIconBtn>
                         </span>
                     </div>
                     <tables ref="cusUserTable" showIndex :loading="cusUserOpts.loading" :columns="cusUserOpts.columns" :total="cusUserOpts.total"
@@ -86,7 +86,7 @@
                    :title="groupOpts.modalTitle" closable @on-ok="groupModalOk" @on-cancel="groupOpts.modal=false" width="350px">
             <Form ref="groupForm" :rules="groupOpts.rules" :model="groupOpts.formItem" label-position="left" :label-width="70">
                 <FormItem label="名称" prop="name">
-                    <Input v-model="groupOpts.formItem.name"></Input>
+                    <Input ref="cusGroupInput" v-model="groupOpts.formItem.name"></Input>
                 </FormItem>
                 <FormItem label="描述">
                     <Input v-model="groupOpts.formItem.desc" type="textarea" :rows="3"></Input>
@@ -146,7 +146,7 @@
                    :title="cusUserOpts.modalTitle" closable @on-ok="cusUserModalOk" @on-cancel="cusUserOpts.modal=false" width="350px">
             <Form ref="cusUserForm" :rules="cusUserOpts.rules" :model="cusUserOpts.formItem" label-position="left" :label-width="70">
                 <FormItem label="账号" prop="account">
-                    <Input v-model="cusUserOpts.formItem.account"></Input>
+                    <Input ref="cusUserInput" v-model="cusUserOpts.formItem.account"></Input>
                 </FormItem>
                 <FormItem label="名称" prop="name">
                     <Input v-model="cusUserOpts.formItem.name"></Input>
@@ -237,11 +237,10 @@
                 return h('SvgIconBtn', {
                   props: {
                     iconText: 'fuwushouquan-copy',
-                    btnText: '授权',
-                    btnName: 'role-set'
+                    tip: '授权'
                   },
                   on: {
-                    'role-set-click': () => {
+                    'click': () => {
                       this.setRole(2, params.row);
                     }
                   }
@@ -295,11 +294,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'fuwushouquan-copy',
-                      btnText: '',
-                      btnName: 'role-permissions'
+                      tip: '授权'
                     },
                     on: {
-                      'role-permissions-click': () => {
+                      'click': () => {
                         // 角色设置
                         this.setRole(3, params.row);
                       }
@@ -308,11 +306,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'bianji1',
-                      btnText: '',
-                      btnName: 'edit'
+                      tip: '编辑'
                     },
                     on: {
-                      'edit-click': () => {
+                      'click': () => {
                         // 编辑
                         this.editGroup(params.row);
                       }
@@ -321,11 +318,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'ren',
-                      btnText: '',
-                      btnName: 'edit'
+                      tip: '成员设置'
                     },
                     on: {
-                      'edit-click': () => {
+                      'click': () => {
                         // 查看组成员
                         this.editGroupUser(params.row);
                       }
@@ -333,12 +329,10 @@
                   }),
                   h('SvgIconBtn', {
                     props: {
-                      iconText: 'delete1',
-                      btnText: '',
-                      btnName: 'role-delete'
+                      iconText: 'delete1'
                     },
                     on: {
-                      'role-delete-click': () => {
+                      'click': () => {
                         // 删除
                         this.delGroup(params.row);
                       }
@@ -425,11 +419,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'fuwushouquan-copy',
-                      btnText: '',
-                      btnName: 'role-permissions'
+                      tip: '授权'
                     },
                     on: {
-                      'role-permissions-click': () => {
+                      'click': () => {
                         // 角色设置
                         this.setRole(2, params.row);
                       }
@@ -438,11 +431,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'bianji1',
-                      btnText: '',
-                      btnName: 'edit'
+                      tip: '编辑'
                     },
                     on: {
-                      'edit-click': () => {
+                      'click': () => {
                         // 编辑
                         this.editCusUser(params.row);
                       }
@@ -450,12 +442,10 @@
                   }),
                   h('SvgIconBtn', {
                     props: {
-                      iconText: 'delete1',
-                      btnText: '',
-                      btnName: 'role-delete'
+                      iconText: 'delete1'
                     },
                     on: {
-                      'role-delete-click': () => {
+                      'click': () => {
                         // 删除
                         this.deleteCusUser(params.row);
                       }
@@ -537,7 +527,6 @@
                   this.selectedDept = this.searchDepts[0];
                 } else {
                   this.orgUserOpts.data = [];
-                  this.selectedDept = {};
                 }
               }
             }
@@ -643,6 +632,7 @@
           invalidTime: null,
           invalidTimeFmt: ''
         };
+        this.$util.focus(this, 'cusGroupInput');
       },
       editGroup(row) {
         this.groupOpts.isEdit = true;
@@ -650,6 +640,7 @@
         this.$refs['groupForm'].resetFields();
         this.groupOpts.formItem = this.$util.copyObject(row);
         this.groupOpts.modal = true;
+        this.$util.focus(this, 'cusGroupInput');
       },
       changeDate(text) {
         this.groupOpts.formItem.invalidTimeFmt = text;
@@ -830,6 +821,7 @@
         this.cusUserOpts.formItem.post = '';
         this.cusUserOpts.formItem.status = '1';
         this.cusUserOpts.formItem.id = '';
+        this.$util.focus(this, 'cusUserInput');
       },
       cusUserModalOk() {
         let me = this;
@@ -857,6 +849,7 @@
         this.cusUserOpts.formItem = this.$util.copyObject(row);
         this.cusUserOpts.modal = true;
         this.cusUserOpts.isEdit = true;
+        this.$util.focus(this, 'cusUserInput');
       },
       deleteCusUser(row) {
         this.cusUserOpts.deleteModal = true;

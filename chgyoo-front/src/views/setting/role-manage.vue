@@ -8,7 +8,7 @@
                                <Input search enter-button v-model="roleOpts.key" style="width: 150px" size="small" @on-search="roleSearch"/>
                             </label></span>
             <span style="display: inline-block; position: relative;top: -7px">
-                <SvgIconBtn iconText="add-copy" btn-text="新增" btn-name="add-role" @add-role-click="addRole"></SvgIconBtn>
+                <SvgIconBtn iconText="add-copy" btn-text="新建" @click="addRole"></SvgIconBtn>
             </span>
         </div>
         <tables ref="roleTable" showIndex :loading="roleOpts.loading" :columns="roleOpts.columns" :total="roleOpts.total"
@@ -25,9 +25,9 @@
                             <span slot="title" class="role_title">菜单列表</span>
                             <div style="padding: 8px">
                                 <ButtonGroup style="float: right">
-                                    <SvgIconBtn icon-text="total_selection" btn-name="select-all" btn-text="" :disabled="treeOpts.allKeys.length <= treeOpts.checkKeys.length" @select-all-click="selectAll"></SvgIconBtn>
-                                    <SvgIconBtn icon-text="zhongzhi" btn-name="disable-all" btn-text="" :disabled="saveMenuDisabled" @disable-all-click="resetMenu"></SvgIconBtn>
-                                    <SvgIconBtn icon-text="baocun1" btn-name="save" btn-text="" :disabled="saveMenuDisabled" :loading="saveMenuLoading" @save-click="saveMenu"></SvgIconBtn>
+                                    <SvgIconBtn icon-text="total_selection" tip="全选" :disabled="treeOpts.allKeys.length <= treeOpts.checkKeys.length" @click="selectAll"></SvgIconBtn>
+                                    <SvgIconBtn icon-text="zhongzhi" tip="重置" :disabled="saveMenuDisabled" @click="resetMenu"></SvgIconBtn>
+                                    <SvgIconBtn icon-text="baocun1" :disabled="saveMenuDisabled" :loading="saveMenuLoading" @click="saveMenu"></SvgIconBtn>
                                 </ButtonGroup>
                                 <div :style="{overflowY: 'auto', overflowX: 'hidden', clear: 'both', height: treeOpts.treeDivHeight, paddingTop: '10px'}">
                                     <Button type="text" v-show="menuLoading" :loading="menuLoading">加载中……</Button>
@@ -44,9 +44,9 @@
                             <span slot="title" class="role_title">按钮列表{{typeof (selectMenu.name) != 'undefined' && selectMenu.name != '' ? ' [ ' + selectMenu.name + ' ]' : ''}}</span>
                             <div style="padding: 8px">
                                 <ButtonGroup style="padding-bottom: 3px;float: right">
-                                    <SvgIconBtn icon-text="total_selection" btn-name="select-all-btns" btn-text="" :disabled="btnOpts.checkValue.length >= btnOpts.selectBtns.length"  @select-all-btns-click="selectAllBtns"></SvgIconBtn>
-                                    <SvgIconBtn icon-text="zhongzhi" btn-name="disable-all" btn-text="" :disabled="btnOpts.saveBtnDisabled" @disable-all-click="resetBtns"></SvgIconBtn>
-                                    <SvgIconBtn icon-text="baocun1" btn-name="save" btn-text="" :disabled="btnOpts.saveBtnDisabled" @save-click="saveBtns"></SvgIconBtn>
+                                    <SvgIconBtn icon-text="total_selection" tip="全选" :disabled="btnOpts.checkValue.length >= btnOpts.selectBtns.length"  @click="selectAllBtns"></SvgIconBtn>
+                                    <SvgIconBtn icon-text="zhongzhi" tip="重置" :disabled="btnOpts.saveBtnDisabled" @click="resetBtns"></SvgIconBtn>
+                                    <SvgIconBtn icon-text="baocun1" :disabled="btnOpts.saveBtnDisabled" @click="saveBtns"></SvgIconBtn>
                                 </ButtonGroup>
                                 <Button type="text" v-show="btnLoading" :loading="btnLoading">加载中……</Button>
                                 <CheckboxGroup v-model="btnOpts.checkValue" @on-change="btnCheckChange">
@@ -169,11 +169,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'chilun',
-                      btnText: '',
-                      btnName: 'role-permissions'
+                      tip: '菜单设置'
                     },
                     on: {
-                      'role-permissions-click': () => {
+                      'click': () => {
                         this.getMenus(params.row);
                       }
                     }
@@ -181,11 +180,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'ren',
-                      btnText: '',
-                      btnName: 'edit'
+                      tip: '该角色的用户'
                     },
                     on: {
-                      'edit-click': () => {
+                      'click': () => {
                         this.getRoleUser(params.row);
                       }
                     }
@@ -193,11 +191,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'bianji1',
-                      btnText: '',
-                      btnName: 'edit'
+                      tip: '编辑'
                     },
                     on: {
-                      'edit-click': () => {
+                      'click': () => {
                         this.editRole(params.row);
                       }
                     }
@@ -205,11 +202,10 @@
                   h('SvgIconBtn', {
                     props: {
                       iconText: 'delete1',
-                      btnText: '',
                       btnName: 'role-delete'
                     },
                     on: {
-                      'role-delete-click': () => {
+                      'click': () => {
                         this.delRole(params.row);
                       }
                     }
@@ -346,11 +342,10 @@
                 return h('SvgIconBtn', {
                   props: {
                     iconText: 'sousuo1',
-                    btnText: '',
-                    btnName: 'role-permissions'
+                    tip: '查看组成员'
                   },
                   on: {
-                    'role-permissions-click': () => {
+                    'click': () => {
                       this.getGroupUser(params.row);
                     }
                   }
@@ -595,7 +590,7 @@
         this.roleItem.invalidTime = null;
         this.roleItem.invalidTimeFmt = '';
         // 设置延时，使得第一个input框可以自动获取焦点
-        setTimeout(()=>{this.$refs['roleCode'].focus();}, 200);
+        this.$util.focus(this, 'roleCode');
       },
       editRole(row) {
         this.roleOpts.roleModal = true;
@@ -604,7 +599,7 @@
         this.roleItem = this.$util.copyObject(row);
         this.modalTitle = this.roleItem.name;
         // 设置延时，使得第一个input框可以自动获取焦点
-        setTimeout(()=>{this.$refs['roleCode'].focus();}, 200);
+        this.$util.focus(this, 'roleCode');
       },
       delRole(row) {
         this.roleOpts.deleteModal = true;

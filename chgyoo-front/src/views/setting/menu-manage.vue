@@ -1,6 +1,6 @@
 <template>
     <div id="example">
-        <Toolbar :btnList="btnList" height="28px" @add="addMenu"></Toolbar>
+        <Toolbar :btnList="btnList" height="28px" @click1="addMenu"></Toolbar>
         <div :style="{height: `${tableHeight}px`}">
         <zk-table
                 ref="table"
@@ -22,11 +22,11 @@
                 @row-click="rowClick">
             <template slot="operation" slot-scope="scope">
                <ButtonGroup>
-                   <SvgIconBtn icon-text="chilun" btn-text="" btn-name="btnsetting" :disabled="scope.row.children.length > 0" @btnsetting-click="btnsetting(scope.row)"></SvgIconBtn>
-                   <SvgIconBtn icon-text="bianji1" btn-text="" btn-name="edit-menu" @edit-menu-click="editMenu(scope.row)"></SvgIconBtn>
-                   <SvgIconBtn icon-text="delete1" btn-text="" btn-name="del" @del-click="del(scope.row, 'menu')"></SvgIconBtn>
-                   <SvgIconBtn icon-text="arrow-up" btn-text="" btn-name="up" :disabled="scope.row.menuOrder == 1" @up-click="upDown(scope.row, true)"></SvgIconBtn>
-                   <SvgIconBtn icon-text="arrow-down" btn-text="" btn-name="down" :disabled="scope.row.last" @down-click="upDown(scope.row, false)"></SvgIconBtn>
+                   <SvgIconBtn icon-text="chilun" tip="按钮设置" :disabled="scope.row.children.length > 0" @click="btnsetting(scope.row)"></SvgIconBtn>
+                   <SvgIconBtn icon-text="bianji1" tip="编辑" @click="editMenu(scope.row)"></SvgIconBtn>
+                   <SvgIconBtn icon-text="delete1" tip="删除" btn-name="del" @click="del(scope.row, 'menu')"></SvgIconBtn>
+                   <SvgIconBtn icon-text="arrow-up" :disabled="scope.row.menuOrder == 1" @click="upDown(scope.row, true)"></SvgIconBtn>
+                   <SvgIconBtn icon-text="arrow-down" :disabled="scope.row.last" @click="upDown(scope.row, false)"></SvgIconBtn>
                 </ButtonGroup>
             </template>
             <template slot="icon" slot-scope="scope">
@@ -42,7 +42,7 @@
             <Form ref="inputItem" :rules="ruleValidate" :model="menuItem" label-position="left"
                   :label-width="80">
                 <FormItem label="菜单名称" prop="name">
-                    <Input v-model="menuItem.name"></Input>
+                    <Input ref="menuInput" v-model="menuItem.name" autofocus></Input>
                 </FormItem>
                 <FormItem label="菜单等级">
                     <Select v-model="menuItem.level">
@@ -81,7 +81,7 @@
             <p slot="header">
                 <ModalTitle custom="iconfont icon-shezhi" :title="btnSettingTitle"></ModalTitle>
             </p>
-            <Toolbar :btnList="btnSettingToolBar" height="28px" @addBtn="addBtn"></Toolbar>
+            <Toolbar :btnList="btnSettingToolBar" height="28px" @click1="addBtn"></Toolbar>
             <Table :loading="btnTableLoading" :columns="btnSettingColumns" :data="btnSettingData" size="small"></Table>
         </Drawer>
 
@@ -90,7 +90,7 @@
                    :ok-loading="modalLoading" @on-ok="modalOk" @on-cancel="modalBtn=false">
             <Form ref="btnForm" :rules="ruleValidateBtn" :model="btnItem" label-position="left" :label-width="50">
                 <FormItem label="名称" prop="name">
-                    <Input v-model="btnItem.name"></Input>
+                    <Input ref="btnInput" v-model="btnItem.name"></Input>
                 </FormItem>
                 <FormItem label="代码" prop="code">
                     <Input v-model="btnItem.code"></Input>
@@ -169,7 +169,6 @@
         btnList: [
           {
             text: ' 菜单录入',
-            funName: 'add',
             icon: 'add-copy'
           }
         ],
@@ -244,7 +243,6 @@
         btnSettingData: [],
         btnSettingToolBar: [{
           text: '添加',
-          funName: 'addBtn',
           icon: 'add-copy'
         }],
         btnSettingTitle: '',
@@ -306,6 +304,7 @@
           id: '',
           menuId: this.selectRow.id
         };
+        this.$util.focus(this, 'btnInput');
       },
       // 编辑按钮
       editBtn(btn) {
@@ -316,6 +315,7 @@
         this.$refs['btnForm'].resetFields();
         this.btnItem = this.$util.copyObject(btn);
         this.btnItem.menuId = this.selectRow.id;
+        this.$util.focus(this, 'btnInput');
       },
       // 删除按钮
       del(obj, type) {
@@ -368,6 +368,7 @@
           this.menuItem.parentId = 'root';
         }
         this.modal = true;
+        this.$util.focus(this, 'menuInput');
       },
       // 打开编辑界面
       editMenu(row) {
@@ -384,6 +385,7 @@
         this.menuItem.level = menuTmp.level == 1 ? 'first' : 'lower';
         this.menuItem.parentId = menuTmp.parent;
         this.modal = true;
+        this.$util.focus(this, 'menuInput');
       },
       modalOk(name) {
           // 刷新数据
