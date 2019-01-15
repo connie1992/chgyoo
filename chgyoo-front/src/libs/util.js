@@ -401,4 +401,10 @@ util.makeRules = (columns) => {
   return rules;
 };
 
+util.focus = (vm, ref) => {
+  setTimeout(() => {
+    vm.$refs[ref].focus();
+  }, 200)
+};
+
 export default util;

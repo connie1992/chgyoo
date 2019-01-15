@@ -39,9 +39,9 @@
             <Button icon="ios-search" size="small" type="primary" @click="search">搜索</Button>
         </div>
         <!-- 工具栏组件 -->
-        <Toolbar ref="toolbar" :btn-list="btnList" @add="add" @edit="edit" @delete="del"></Toolbar>
+        <Toolbar ref="toolbar" :btn-list="btnList" @click1="add" @click2="edit" @click3="del"></Toolbar>
         <!-- 表格组件-->
-        <tables ref="demoTable" show-selection show-elevator refresh-by-change-book :loading="tableOpts.loading" :columns="tableOpts.columns" :pagerPageSize="20" :pagerPageSizeOpts="[10, 20, 30]"
+        <tables ref="demoTable" show-selection show-elevator :loading="tableOpts.loading" :columns="tableOpts.columns" :pagerPageSize="20" :pagerPageSizeOpts="[10, 20, 30]"
                 :prop-data="tableOpts.tableData" :height="tableOpts.height" :size="tableOpts.size" :total="tableOpts.total" @load-data="getTableData">
         </tables>
 
@@ -51,18 +51,18 @@
             <Form ref="form" :rules="formOpts.rules" :model="formOpts.item" label-position="left"
                          :label-width="100">
             <FormItem label="姓名" prop="name">
-                <Input v-model="formOpts.item.name"></Input>
+                <Input ref="userInput" v-model="formOpts.item.name"></Input>
             </FormItem>
             <FormItem label="地址" prop="address">
                 <Input v-model="formOpts.item.address"></Input>
+            </FormItem>
+            <FormItem label="入职日期" prop="jobDate">
+                <DatePicker type="date" v-model="formOpts.item.jobDate"></DatePicker>
             </FormItem>
             <FormItem label="学校">
                 <Select v-model="formOpts.item.school">
                     <Option v-for="item in schoolList" :value="item.value" :key="item.value">{{ item.label}}</Option>
                 </Select>
-            </FormItem>
-            <FormItem label="入职日期" prop="jobDate">
-                <DatePicker type="date" v-model="formOpts.item.jobDate"></DatePicker>
             </FormItem>
         </Form>
         </EditModal>
@@ -110,19 +110,16 @@
         btnList: [
           {
             text: ' 新增',
-            funName: 'add',
             icon: 'add-copy',
             permission: 'add'
           },
           {
             text: ' 编辑',
-            funName: 'edit',
             icon: 'EditItemMapping',
             permission: 'edit'
           },
           {
             text: ' 删除',
-            funName: 'delete',
             icon: 'delete1',
             permission: 'delete'
           }
@@ -169,6 +166,8 @@
         this.modalOpts.isEdit = false;
         this.modalOpts.modal = true;
         this.formOpts.item.school = this.schoolList[0].value;
+        this.formOpts.item.id = '';
+        this.$util.focus(this, 'userInput');
       },
       edit() {
         let selects = this.$refs.demoTable.getSelects();
@@ -184,6 +183,7 @@
           this.formOpts.item = newItem;
           this.modalOpts.modal = true;
         }
+        this.$util.focus(this, 'userInput');
       },
       del() {
         this.tableOpts.selects = this.$refs.demoTable.getSelects();

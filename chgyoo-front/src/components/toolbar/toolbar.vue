@@ -1,13 +1,13 @@
 <template>
     <div v-if="show" :style="{padding: '1px 0 1px 0px',background:bgColor}">
         <ButtonGroup v-if="show" ref="toolBarGroup" id="testGroup">
-            <template v-for="item in btnList">
-                <Button v-if="item.permission" type="text" :key="item.funcName" size="small" @click="toolClick(item.funName)"
+            <template v-for="(item, index) in btnList">
+                <Button v-if="item.permission" type="text" :key="item.funcName" size="small" @click="toolClick(index)"
                         v-haspermission="item.permission" :style="{height: height}">
                     <!-- 彩色图标 -->
                     <SvgIcon :iconText="item.icon"></SvgIcon><span style="font-size: 10px">{{item.text}}</span>
                 </Button>
-                <Button v-else type="text"  :key="item.funcName" size="small" @click="toolClick(item.funName)"
+                <Button v-else type="text"  :key="item.funcName" size="small" @click="toolClick(index)"
                         :style="{height: height}">
                     <SvgIcon :iconText="item.icon"></SvgIcon><span style="font-size: 10px">{{item.text}}</span>
                 </Button>
@@ -45,8 +45,8 @@
       };
     },
     methods: {
-      toolClick(funName) {
-        this.$emit(funName);
+      toolClick(index) {
+        this.$emit(`click${index + 1}`);
       },
       getHeight() {
         return this.show ? Number(this.height.substring(0, this.height.length - 2)) + 4 : 0;
