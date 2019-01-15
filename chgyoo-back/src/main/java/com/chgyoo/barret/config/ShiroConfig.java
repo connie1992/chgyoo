@@ -34,11 +34,11 @@ import java.util.Map;
 public class ShiroConfig {
 
 
-    @Value("${spring.redis.shiro.host}")
+    @Value("${spring.redis.host}")
     private String host;
-    @Value("${spring.redis.shiro.port}")
+    @Value("${spring.redis.port}")
     private int port;
-    @Value("${spring.redis.shiro.timeout}")
+    @Value("${spring.redis.timeout}")
     private int timeout;
 
     @Autowired
