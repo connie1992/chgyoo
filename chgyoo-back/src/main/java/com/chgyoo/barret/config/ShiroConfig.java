@@ -1,6 +1,5 @@
 package com.chgyoo.barret.config;
 
-import com.chgyoo.barret.entity.Role;
 import com.chgyoo.barret.mapper.RoleMapper;
 import com.chgyoo.barret.service.RoleService;
 import com.chgyoo.barret.service.UserService;
@@ -23,7 +22,6 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,8 +36,6 @@ public class ShiroConfig {
     private String host;
     @Value("${spring.redis.port}")
     private int port;
-    @Value("${spring.redis.timeout}")
-    private int timeout;
 
     @Autowired
     private UserService userService;
@@ -146,7 +142,6 @@ public class ShiroConfig {
         redisManager.setHost(host);
         redisManager.setPort(port);
         redisManager.setExpire(1800);
-        redisManager.setTimeout(timeout);
         return redisManager;
     }
 
