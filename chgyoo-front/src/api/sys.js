@@ -31,9 +31,9 @@ export const setStatus = (params) => {
 const publicNoticeUrl = 'publicNotice/';
 
 export const getPublicNotice = (params) => {
-    return postRequest(`${publicNoticeUrl}pageQuery`, params);
+  return postRequest(`${publicNoticeUrl}pageQuery`, params);
 };
 
 export const publicNoticeAddUpdate = (params) => {
-    return postRequest(`${publicNoticeUrl}addOrUpdate`, params);
+  return postRequest(`${publicNoticeUrl}addOrUpdate`, params);
 };

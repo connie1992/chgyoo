@@ -68,7 +68,7 @@
         </EditModal>
 
         <!-- 删除对话框 -->
-        <DeleteModal :modal="modalOpts.deleteModal" :params="tableOpts.selects" url="demo/delete" @on-ok="onOk" @on-cancel="deleteModal = false">
+        <DeleteModal :modal="modalOpts.deleteModal" :params="tableOpts.selects" url="demo/delete" @on-ok="onOk" @on-cancel="modalOpts.deleteModal = false">
         </DeleteModal>
     </div>
 </template>
@@ -170,27 +170,22 @@
         this.$util.focus(this, 'userInput');
       },
       edit() {
-        let selects = this.$refs.demoTable.getSelects();
-        this.tableOpts.selects = selects;
-        this.modalOpts.isEdit = true;
-        if (selects.length > 1 ||
-          selects.length == 0) {
-          this.$Message.error('请选择一条记录操作！');
-        } else {
+        let selects = this.$util.checkSelect(this, 'demoTable');
+        if (selects) {
+          this.tableOpts.selects = selects;
+          this.modalOpts.isEdit = true;
           this.$refs['form'].resetFields();
           // 复制一个新的对象，不能直接操作selects，因为表单重置的时候会直接将对象的值重置！
           let newItem = this.$util.copyObject(selects[0]);
           this.formOpts.item = newItem;
           this.modalOpts.modal = true;
+          this.$util.focus(this, 'userInput');
         }
-        this.$util.focus(this, 'userInput');
       },
       del() {
-        this.tableOpts.selects = this.$refs.demoTable.getSelects();
-        console.log(this.tableOpts.selects);
-        if (this.tableOpts.selects.length == 0) {
-          this.$Message.error('请至少选择一条记录！');
-        } else {
+        let selects = this.$util.checkSelect(this, 'demoTable');
+        if (selects) {
+          this.tableOpts.selects = selects;
           this.modalOpts.deleteModal = true;
         }
       },
@@ -233,6 +228,7 @@
     mounted() {
       this.getTableData();
       let me = this;
+
       me.setHeight();
       window.onresize = () => {
         // 通过捕获系统的onresize事件触发我们需要执行的事件

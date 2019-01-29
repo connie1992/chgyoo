@@ -82,6 +82,15 @@
                > div {
                    width: 130px;
                    text-align: left;
+                   // 设置输入框的高度，这样的话就不需要每一个输入框都设置size=small
+                   input {
+                       height: 25px;
+                   }
+                   // 输入框的图标位置调整，因为高度不是默认的高度，图标的位置必然要调整，不然会错位
+                   .ivu-input-icon {
+                       font-size: 14px;
+                       line-height: 24px;
+                   }
                }
            }
         }
@@ -108,4 +117,19 @@
 }
 .ivu-table {
     color: #2e2e2f;
+}
+
+.ivu-upload-list {
+    float: right;
+    margin-top: 0px;
+    margin-left: 20px;
+    width: 350px;
+}
+
+.ivu-upload {
+    height: 40px
+}
+
+.ivu-table-tip {
+    //height: 87%
 }

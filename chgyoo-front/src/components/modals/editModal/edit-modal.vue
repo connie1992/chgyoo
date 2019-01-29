@@ -1,5 +1,17 @@
+<style lang="less">
+    .vertical-center-modal{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .ivu-modal{
+            top: 0;
+        }
+    }
+</style>
 <template>
-    <Modal :width="width" v-model="modal" :mask-closable="maskClosable" :closable="closable" @on-cancel="modalCancel">
+    <Modal :width="width" v-model="modal" :draggable="draggable" :mask-closable="maskClosable" :closable="closable" :styles="{top: `${top}px`}"
+           @on-cancel="modalCancel">
         <p slot="header">
             <ModalTitle :custom="modalIcon" :title="modalTitle"></ModalTitle>
         </p>
@@ -76,8 +88,15 @@
       closable: {
         type: Boolean,
         default: true
+      },
+      top: {
+        type: Number,
+        default: 100
+      },
+      draggable: {
+        type: Boolean,
+        default: false
       }
-
     },
     data() {
       return {
@@ -121,6 +140,3 @@
   };
 </script>
 
-<style scoped>
-
-</style>

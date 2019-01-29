@@ -57,8 +57,8 @@ const user = {
     setRouteFlag: (state, flag) => {
       state.routed = flag;
     },
-    setBreadCrumb(state, routeMetched) {
-      state.breadCrumbList = getBreadCrumbList(routeMetched, state.homeRoute);
+    setBreadCrumb(state, payload) {
+      state.breadCrumbList = getBreadCrumbList(payload.matched, state.homeRoute, payload.route, state.routers);
     },
     setCurrentBook(state, book) {
       state.currentBook = book;

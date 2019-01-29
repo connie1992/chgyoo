@@ -251,13 +251,22 @@ util.checkUpdate = function (vm) {
 };
 
 util.splitRoute = (menuUrl) => {
-  let path = [];
-  path = menuUrl.split('/');
+  let path = menuUrl.split('/');
   if (path[path.length - 1].indexOf(':') >= 0) {
-    return path[path.length - 2];
+    // 带参数的路由: /test/:name=chenhuogu&:id=21480
+    let paramArr = path[path.length - 1].split('&');
+    let paramPath = '';
+    let last = menuUrl.lastIndexOf('/');
+    let url = menuUrl.substring(0, last);
+    paramArr.forEach(item => {
+      let index = item.indexOf('=');
+      paramPath = `/${item.substring(0, index)}`;
+      url = url + `/${item.substring(index + 1)}`;
+    });
+    return {path: path[path.length - 2] + paramPath, url: url, isParam : true};
   }
   else {
-    return path[path.length - 1];
+    return {path: path[path.length - 1], url: menuUrl, isParam : false};
   }
 };
 
@@ -358,7 +367,7 @@ util.isSuccess= (res) => {
   if (res.message === 'request cancel') {
     return false;
   } else {
-    return res.data.code == 200;
+    return (res.data && res.data.code == 200) || (res.code == 200);
   }
 };
 
@@ -396,8 +405,6 @@ util.makeRules = (columns) => {
       }
     }
   });
-  console.log('表单校验规则为：');
-  console.log(rules);
   return rules;
 };
 
@@ -405,6 +412,27 @@ util.focus = (vm, ref) => {
   setTimeout(() => {
     vm.$refs[ref].focus();
   }, 200)
+};
+
+util.checkSelect = (vm, ref) => {
+  let select = vm.$refs[ref].getSelects();
+  if (select.length == 0) {
+    vm.$Message.error('请选择一条记录操作！');
+    return false;
+  } else {
+    return select;
+  }
+};
+
+util.formValid = (vm, formRef) => {
+  return new Promise(resolve => {
+    vm.$refs[formRef].validate(valid => {
+      if (!valid) {
+        vm.$Message.error('请填写完整！');
+      }
+      resolve(valid);
+    });
+  });
 };
 
 export default util;

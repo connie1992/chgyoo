@@ -114,9 +114,9 @@ service.interceptors.request.use(config => {
       return new Promise(resolve => {
         checkToken().then(ok => {
           if (ok) {
-            console.log('设置请求头……');
+            /*console.log('设置请求头……');
             console.log(config.url);
-            console.log(store.state.user.token);
+            console.log(store.state.user.token);*/
             config.headers.token = store.state.user.token;
             resolve(config);
           } else {
@@ -137,8 +137,8 @@ service.interceptors.request.use(config => {
 
 // 后台请求返回统一处理接口
 service.interceptors.response.use((data) => {
-  console.log('请求返回……');
-  console.log(data);
+ /* console.log('请求返回……');
+  console.log(data);*/
   if ((data.status && data.status != 200)) {
     Message.error('请求失败，请联系管理员');
   } else if (data.data.code == 500) {

@@ -19,7 +19,7 @@ export const router = new VueRouter(RouterConfig);
 
 router.beforeEach((to, from, next) => {
   iView.LoadingBar.start();
-  Util.title(to.meta.title);
+  Util.title(to.meta ? (to.meta.title ? to.meta.title : (to.meta .titleMap ? to.meta .titleMap[to.path] : '')) : 'bms');
   console.log('router拦截：--------------');
   console.log(to);
   console.log('检查用户登录状态：');
