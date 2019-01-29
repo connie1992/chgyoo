@@ -13,6 +13,7 @@
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
     <result column="path" property="path" jdbcType="VARCHAR"/>
+    <result column="menu_path" property="menuPath" jdbcType="VARCHAR"/>
     <collection property="permission" ofType="java.lang.String">
       <result column="code" jdbcType="VARCHAR"></result>
     </collection>
@@ -38,7 +39,14 @@
    </select>
 
   <select id="getMenuByPid" resultMap="menuMap">
-        SELECT t.*, null code FROM t_menu t WHERE parent_id = #{pid} and menu_order = #{menuOrder}
+    SELECT t.*, null code FROM t_menu t WHERE parent_id = #{pid}
+    <if test="menuOrder >= 0">
+      and menu_order = #{menuOrder}
+    </if>
+  </select>
+
+  <select id="getMenuById" resultMap="menuMap">
+    SELECT t.*, null code FROM t_menu t WHERE id = #{id}
   </select>
 
   <select id="getBtns" resultMap="btnMap">
@@ -60,8 +68,8 @@
     <selectKey keyProperty="path" resultType="java.lang.String" order="BEFORE">
       <include refid="queryMenuPath"></include>
     </selectKey>
-    insert into t_menu  (id, name, page_path, route_url, icon, menu_order, parent_id, create_time, path)
-    values (#{id}, #{name}, #{pagePath}, #{routeUrl}, #{icon}, #{menuOrder}, #{parentId}, #{createTime}, #{path}
+    insert into t_menu t (t.id, t.name, t.page_path, t.route_url, t.icon, t.menu_order, t.parent_id, t.create_time, t.path, t.menu_path)
+    values (#{id}, #{name}, #{pagePath}, #{routeUrl}, #{icon}, #{menuOrder}, #{parentId}, #{createTime}, #{path}, #{menuPath}
     )
   </insert>
 
@@ -69,19 +77,23 @@
     <selectKey keyProperty="path" resultType="java.lang.String" order="BEFORE">
       <include refid="queryMenuPath"></include>
     </selectKey>
-    update t_menu set name = #{name}, page_path = #{pagePath}, route_url = #{routeUrl}, icon = #{icon},
-    menu_order=#{menuOrder}, parent_id = #{parentId}, update_time = #{updateTime}, path = #{path} where id = #{id}
+    update t_menu t set t.name = #{name}, t.page_path = #{pagePath}, t.route_url = #{routeUrl}, t.icon = #{icon},
+    t.menu_order=#{menuOrder}, t.parent_id = #{parentId}, t.update_time = #{updateTime}, t.path = #{path}
+    <if test="menuPath != null">
+      , t.menu_path = #{menuPath}
+    </if>
+    where t.id = #{id}
   </update>
 
   <delete id="deleteMenu">
-    delete t from t_menu t where t.id in
+    delete from t_menu t where t.id in
     <foreach collection="ids" item="id" open="(" close=")" separator=",">
       #{id}
     </foreach>
   </delete>
 
   <select id="getRoleSize" resultType="java.lang.Integer">
-    select count(1) from t_role t
+    select count(*) from t_role t
     <where>
       <if test="key != ''">
         t.code like CONCAT(CONCAT('%', #{key}),'%')
@@ -91,26 +103,31 @@
   </select>
 
   <select id="getRoleTableData" resultMap="roleMap">
-       select * from t_role t
-        <if test="key != ''">
-          where t.code like CONCAT(CONCAT('%', #{key}),'%')
-          or t.name like CONCAT(CONCAT('%', #{key}),'%')
-        </if>
-        <if test="pageParam.sortKey != null and pageParam.sortKey != ''">
-          order by ${pageParam.sortKey} ${pageParam.sortType}
-        </if> limit #{pageParam.pageStart}, #{pageParam.pageEnd}
+    select * from (
+    select a.*, ROWNUM rn_ from
+    (select * from t_role t
+    <if test="key != ''">
+      where t.code like CONCAT(CONCAT('%', #{key}),'%')
+      or t.name like CONCAT(CONCAT('%', #{key}),'%')
+    </if>
+    <if test="pageParam.sortKey != null and pageParam.sortKey != ''">
+      order by ${pageParam.sortKey} ${pageParam.sortType}
+    </if>
+    ) a where <![CDATA[ ROWNUM<=(#{pageParam.pageIndex}+1)*#{pageParam.pageSize} ]]>
+    )
+    where <![CDATA[ rn_>#{pageParam.pageIndex}*#{pageParam.pageSize} ]]>
   </select>
 
   <select id="getActiveRole" resultMap="roleMap">
     select *
       from t_role t
-     where t.invalid_time is null
-        or (date_format(t.invalid_time, 'yyyy-mm-dd') >
-           date_format(sysdate(), 'yyyy-mm-dd'))
+     where  t.invalid_time is null
+        or (to_char(t.invalid_time, 'yyyy-mm-dd') >
+           to_char(sysdate, 'yyyy-mm-dd'))
   </select>
 
   <update id="updateRole" parameterType="com.chgyoo.barret.entity.Role">
-    update t_role t set t.name=#{name}, t.code=#{code}, t.describe=#{desc}
+    update t_role t set t.name=#{name}, t.code=#{code}, t.describe=#{desc}, t.create_time = #{createTime}
     <choose>
       <when test="invalidTime != null">
         , t.invalid_time=#{invalidTime}
@@ -119,12 +136,12 @@
         , t.invalid_time = null
       </otherwise>
     </choose>
-     where t.id = #{id}
+    where t.id = #{id}
   </update>
 
 
   <insert id="insertRole" parameterType="com.chgyoo.barret.entity.Role">
-    insert into t_role (id, name, code, create_time, `describe`
+    insert into t_role t (t.id, t.name, t.code, t.create_time, describe
     <if test="invalidTime != null">
       , t.invalid_time
     </if>
@@ -147,7 +164,7 @@
   </select>
 
   <delete id="removeRoleMenu">
-    delete t from t_role_menu t where t.role_id = #{roleId} and t.menu_id in
+    delete from t_role_menu t where t.role_id = #{roleId} and t.menu_id in
     <foreach collection="menuArr" item="menuId" open="(" close=")" separator=",">
       #{menuId}
     </foreach>
@@ -155,7 +172,7 @@
 
   <insert id="saveRoleMenu" useGeneratedKeys="false">
     insert into
-        t_role_menu (id, role_id, menu_id)
+    t_role_menu t (t.id, t.role_id, t.menu_id)
     (
     <foreach collection="list" item="item" separator="union all">
       select #{item.id}, #{item.roleId}, #{item.menuId} from dual
@@ -164,8 +181,8 @@
   </insert>
 
   <delete id="removeRoleBtn">
-    delete t from t_role_menu_btn t where t.role_menu_id = (
-      select id from t_role_menu where role_id = #{roleId} and menu_id = #{menuId}
+    delete from t_role_menu_btn t where t.role_menu_id = (
+    select id from t_role_menu where role_id = #{roleId} and menu_id = #{menuId}
     ) and
     t.btn_id in
     <foreach collection="btnArr" item="id" open="(" close=")" separator=",">
@@ -178,7 +195,7 @@
       select id from t_role_menu t where role_id = #{roleId} and t.menu_id = #{menuId}
     </selectKey>
     insert into
-    t_role_menu_btn (id, role_menu_id, btn_id)
+    t_role_menu_btn t (t.id, t.role_menu_id, t.btn_id)
     (
     <foreach collection="list" item="item" separator="union all">
       select #{item.id}, #{role_menu_id}, #{item.btnId} from dual
@@ -188,23 +205,24 @@
 
   <select id="getRoleMenuBtn" resultMap="menuMap">
     select distinct t4.id,
-                    t4.name,
-                    t4.route_url,
-                    t4.page_path,
-                    t4.icon,
-                    t4.parent_id,
-                    t4.menu_order,
-                    t4.path,
-                    t5.code
-      from (select t3.*, t2.btn_id
-              from t_role_menu t1 left join t_role_menu_btn t2 on t1.id = t2.role_menu_id, t_menu t3
-             where t1.role_id in
-                   <foreach collection="roles" open="(" close=")" separator="," item="roleId">
-                     #{roleId}
-                   </foreach>
-               and t1.menu_id = t3.id) t4 left join t_button t5
-                on
-                t4.btn_id = t5.id
-     order by t4.parent_id, t4.menu_order
+    t4.name,
+    t4.route_url,
+    t4.page_path,
+    t4.icon,
+    t4.parent_id,
+    t4.menu_order,
+    t4.path,
+    t5.code
+    from (select t3.*, t2.btn_id
+    from t_role_menu t1, t_role_menu_btn t2, t_menu t3
+    where t1.role_id in
+    <foreach collection="roles" open="(" close=")" separator="," item="roleId">
+      #{roleId}
+    </foreach>
+    and t1.id = t2.role_menu_id(+)
+    and t1.menu_id = t3.id) t4,
+    t_button t5
+    where t4.btn_id = t5.id(+)
+    order by t4.parent_id, t4.menu_order
   </select>
 </mapper>

@@ -35,13 +35,14 @@ public class RoleController {
   }
 
   @RequestMapping("/addOrUpdate")
-  public ResultJson addOrUpdate(String fmtDate, Role role) throws Exception {
+  public ResultJson addOrUpdate(String fmtDate, String createFmt, Role role) throws Exception {
     SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");
     if (!StringUtils.isEmpty(fmtDate)) {
       role.setInvalidTime(sd.parse(fmtDate));
     } else {
       role.setInvalidTime(null);
     }
+    role.setCreateTime(sd.parse(createFmt));
     roleService.addOrUpdate(role);
     return new ResultJson("保存成功");
   }

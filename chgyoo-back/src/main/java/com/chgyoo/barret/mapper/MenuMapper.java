@@ -27,8 +27,8 @@ import com.chgyoo.barret.model.PageParam;
    * 更新菜单
    * @param menu
    */
-//  @Update({
-//      "update t_menu t set t.name = #{name}, t.page_path = #{pagePath}, t.route_url = #{routeUrl}, t.icon = #{icon}, t.menu_order=#{menuOrder}, t.parent_id = #{parentId}, t.update_time = #{updateTime} where t.id = #{id}"})
+  //  @Update({
+  //      "update t_menu t set t.name = #{name}, t.page_path = #{pagePath}, t.route_url = #{routeUrl}, t.icon = #{icon}, t.menu_order=#{menuOrder}, t.parent_id = #{parentId}, t.update_time = #{updateTime} where t.id = #{id}"})
   void updateMenu(Menu menu);
 
   /**
@@ -41,34 +41,36 @@ import com.chgyoo.barret.model.PageParam;
    * 删除按钮
    * @param id
    */
-  @Delete({"delete t from t_button t where t.id = #{id}"})
+  @Delete({"delete from t_button t where t.id = #{id}"})
   void deleteBtn(@Param("id") String id);
 
   void deleteMenu(@Param("ids") List<String> ids);
+
   /**
    * 获取子菜单
    * @param pid
    * @param menuOrder
    * @return
    */
-
   Menu getMenuByPid(@Param("pid") String pid, @Param("menuOrder") int menuOrder);
 
+
+  Menu getMenuById(@Param("id") String id);
   /**
    * 顺序+1
    * @param id
    */
-  @Update({"update t_menu set menu_order = menu_order + 1 where id = #{id}"})
+  @Update({"update t_menu t set t.menu_order = t.menu_order + 1 where t.id = #{id}"})
   void updateOrderInc(@Param("id") String id);
 
   /**
    * 排序-1
-    * @param id
+   * @param id
    */
-  @Update({"update t_menu set menu_order = menu_order - 1 where id = #{id}"})
+  @Update({"update t_menu t set t.menu_order = t.menu_order - 1 where t.id = #{id}"})
   void updateOrderDesc(@Param("id") String id);
 
-  @Update({"update t_menu set menu_order = menu_order - 1 where parent_id = #{pid} and menu_order > #{order}"})
+  @Update({"update t_menu t set t.menu_order = t.menu_order - 1 where t.parent_id = #{pid} and t.menu_order > #{order}"})
   void updateOrderByPid(@Param("pid") String pid, @Param("order") int order);
   /**
    * 获取改父菜单下目前的最大排序
@@ -85,13 +87,13 @@ import com.chgyoo.barret.model.PageParam;
    */
   List<Button> getBtns(@Param("menuId") String menuId);
 
-  @Update({"update t_button set code = #{code}, name = #{name} where id = #{id}"})
+  @Update({"update t_button t set t.code = #{code}, t.name = #{name} where t.id = #{id}"})
   void updateBtn(Button btn);
 
-  @Insert({"insert into t_button (id, code, name) values (#{id}, #{code}, #{name})"})
+  @Insert({"insert into t_button t (t.id, t.code, t.name) values (#{id}, #{code}, #{name})"})
   void insertBtn(Button btn);
 
-  @Insert({"insert into t_menu_btn (id, menu_id, btn_id) values (#{id}, #{menuId}, #{btnId})"})
+  @Insert({"insert into t_menu_btn t (t.id, t.menu_id, t.btn_id) values (#{id}, #{menuId}, #{btnId})"})
   void insertMenuBtn(@Param("id") String id, @Param("menuId") String menuId,
       @Param("btnId") String btnId);
 
@@ -106,7 +108,7 @@ import com.chgyoo.barret.model.PageParam;
 
   void insertRole(Role role);
 
-  @Delete({"delete t from t_role t where t.id = #{id}"})
+  @Delete({"delete from t_role t where t.id = #{id}"})
   void deleteRole(@Param("id") String id);
 
   List<Menu> getRoleMenu(@Param("roleId") String roleId);
