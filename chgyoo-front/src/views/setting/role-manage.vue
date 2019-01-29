@@ -94,8 +94,11 @@
                 <FormItem label="描述">
                     <Input v-model="roleItem.desc" type="textarea"></Input>
                 </FormItem>
+                <FormItem label="生效日" prop="createTime">
+                    <DatePicker type="date" placeholder="Select date" :options="roleOpts.dateOption" v-model="roleItem.createTime" style="width: 220px"></DatePicker>
+                </FormItem>
                 <FormItem label="到期日">
-                    <DatePicker type="date" placeholder="Select date" :options="roleOpts.dateOption" v-model="roleItem.invalidTime" style="width: 220px" @on-change="changeDate"></DatePicker>
+                    <DatePicker type="date" placeholder="Select date" :options="roleOpts.dateOption" v-model="roleItem.invalidTime" style="width: 220px"></DatePicker>
                 </FormItem>
             </Form>
         </EditModal>
@@ -141,16 +144,35 @@
             {
               title: '角色名称',
               key: 'name',
-              width: 200
+              tooltip: true,
+              minWidth: 100
             },
             {
               title: '描述',
-              key: 'desc'
+              key: 'desc',
+              tooltip: true,
+              minWidth: 120
+            },
+            {
+              title: '生效日期',
+              width: 120,
+              align: 'center',
+              render: function (h, params) {
+                return h('span', params.row.createTime.substring(0, 10));
+              }
+            },
+            {
+              title: '失效日期',
+              width: 120,
+              align: 'center',
+              render: function (h, params) {
+                return h('span', params.row.invalidTime ? params.row.invalidTime.substring(0, 10) : '');
+              }
             },
             {
               title: '有效期（距今/天）',
               key: 'validDays',
-              width: 150,
+              width: 120,
               align: 'center'
             },
             {
@@ -233,12 +255,13 @@
           name: '',
           code: '',
           desc: '',
-          invalidTime: null,
-          invalidTimeFmt: ''
+          createTime: new Date(),
+          invalidTime: null
         },
         rules: {
           name: [{required: true, message: '名称不能为空', trigger: 'blur'}],
-          code: [{required: true, message: '编码不能为空', trigger: 'blur'}]
+          code: [{required: true, message: '编码不能为空', trigger: 'blur'}],
+          createTime: [{required: true, message: '生效日期不能为空', trigger: 'change', type: 'date'}],
         },
         okLoading: false,
         isEdit: false,
@@ -588,7 +611,6 @@
         this.roleItem.id = '';
         this.roleItem.desc = '';
         this.roleItem.invalidTime = null;
-        this.roleItem.invalidTimeFmt = '';
         // 设置延时，使得第一个input框可以自动获取焦点
         this.$util.focus(this, 'roleCode');
       },
@@ -610,9 +632,6 @@
         this.roleOpts.deleteModal = false;
         this.getRoleTableData();
       },
-      changeDate(text) {
-        this.roleItem.invalidTimeFmt = text;
-      },
       modalOk() {
         let me = this;
         this.$refs['roleForm'].validate(valid => {
@@ -623,7 +642,8 @@
               name: this.roleItem.name,
               code: this.roleItem.code,
               desc: this.roleItem.desc,
-              fmtDate: this.roleItem.invalidTimeFmt
+              createFmt: this.roleItem.createTime.Format('yyyy-MM-dd'),
+              fmtDate: this.roleItem.invalidTime ? this.roleItem.invalidTime.Format('yyyy-MM-dd') : ''
             };
             saveRole(params).then(res => {
               if (me.$isSuccess(res)) {

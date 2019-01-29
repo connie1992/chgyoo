@@ -58,6 +58,9 @@
                     <Col span="6" style="text-align: right"><label :style="{fontSize: sizeTextFontSize}">{{sizeText}}</label></Col>
                 </Row>
             </div>
+            <div v-if="!showPage && showTotalDesc" style="padding-top: 8px; text-align: right" ref="pagerDiv">
+                <label :style="{fontSize: sizeTextFontSize}">共{{tableData.length}}条数据</label>
+            </div>
         </div>
     </div>
 </template>
@@ -89,6 +92,10 @@
       showPage: {
         type: Boolean,
         default: true
+      },
+      showTotalDesc: {
+        type: Boolean,
+        default: false
       },
       size: {
         type: String,
@@ -162,6 +169,10 @@
       showElevator: {
         type: Boolean,
         default: false
+      },
+      refreshByRouteChange: {
+        type: Boolean,
+        default: true
       }
     },
     /**
@@ -185,7 +196,8 @@
       sizeText: function() {
         let end = this.current * this.pageSize;
         end = end > this.total ? this.total : end;
-        return `当前${(this.current - 1) * this.pageSize + 1}~${end}，共${this.total}条`;
+        let start = end == 0 ? 0 : (this.current - 1) * this.pageSize + 1;
+        return `当前${start}~${end}，共${this.total}条`;
       },
     },
     watch: {
@@ -201,6 +213,10 @@
         if (this.refreshByChangeBook) {
           this.search();
         }
+      },
+      columns: function (cols) {
+        // console.log('列配置改变了……');
+        // console.log(cols);
       }
     },
     methods: {
@@ -316,8 +332,8 @@
     },
     created() {
       this.pageSize = this.pagerPageSize;
-      if (this.showIndex) {
-        this.columns.unshift({
+      if (this.showIndex && (this.columns.length == 0 || (this.columns.length > 0 && this.columns[0].type != 'index'))) {
+        let indexParam = {
           type: 'index',
           width: this.indexWidth,
           align: 'center',
@@ -328,7 +344,15 @@
           renderHeader: (h) => {
             return h('span', '序号');
           }
-        });
+        };
+        // 判断有没有左边固定列的情况
+        for (let i = 0; i < this.columns.length; i++) {
+          if (this.columns[i].fixed === 'left') {
+            indexParam.fixed = 'left';
+            break;
+          }
+        }
+        this.columns.unshift(indexParam);
       }
       if (this.showSelection) {
         this.columns.unshift({
@@ -337,6 +361,10 @@
       }
     },
     mounted() {
+      if (this.refreshByRouteChange) {
+        // 如果在路由变化时刷新表格数据，则需要将该组件和路由地址保存到全局变量中
+        this.$store.commit('setVmMap', {path: this.$route.path, component: this});
+      }
     }
   };
 </script>

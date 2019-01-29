@@ -2,62 +2,48 @@
     <div>
         <!-- 搜索 -->
         <div class="search">
-            <span>编码：<Input v-model="codeSearch" style="width: 140px" size="small"/></span>
-            <span>名称：<Input v-model="nameSearch" style="width: 140px" size="small"/></span>
-            <span>参数类型：
-                <Select v-model="typeSearch" style="width: 140px" size="small">
-                    <Option v-for="opt in typeOptions" :value="opt.value" :key="opt.value">{{opt.label}}</Option>
-                </Select>
-            </span>
-            <span>值类型：
-                <Select v-model="vtypeSearch" style="width: 140px" size="small">
-                    <Option v-for="opt in vtypeOptions" :value="opt.value" :key="opt.value">{{opt.label}}</Option>
-                </Select>
-            </span>
-        &nbsp;   <Button icon="ios-search" size="small" type="primary" @click="search">搜索</Button>
+            <span>标题：<Input v-model="nameSearch" style="width: 140px" size="small"/></span>
+            &nbsp;
+            <Button icon="ios-search" size="small" type="primary" @click="search">搜索</Button>
         </div>
         <!-- 工具栏组件-->
         <Toolbar ref="toolbar" :btn-list="btnList" @click1="add" @click2="edit" @click3="del"></Toolbar>
-        <Tables ref="paramsTable" highlight-row  show-index :loading="tableOpts.loading" :columns="tableOpts.columns"
+        <Tables ref="paramsTable" highlight-row show-index :loading="tableOpts.loading" :columns="tableOpts.columns"
                 :prop-data="tableOpts.tableData" :height="tableOpts.height"
                 :total="tableOpts.total"
                 @load-data="getTableData"></Tables>
         <EditModal :modalStatus="modal" :ok-loading="okLoading" :is-edit="isEdit" width="330px"
-        :title="modalTitle" @on-ok="modalOk" @on-cancel="modal=false">
+                   :title="modalTitle" @on-ok="modalOk" @on-cancel="modal=false">
             <Form ref="paramForm" :rules="rules" :model="formItem" label-position="left" :label-width="90">
-                <FormItem label="参数类型" prop="type">
+                <FormItem label="标题" prop="type">
+                    <Input v-model="formItem.name"></Input>
+                </FormItem>
+
+                <FormItem label="类型" prop="type">
                     <Select v-model="formItem.type">
                         <Option v-for="opt in typeOptions" :value="opt.value" :key="opt.value">{{opt.label}}</Option>
                     </Select>
                 </FormItem>
-                <FormItem label="参数编码" prop="code">
-                    <Input v-model="formItem.code"></Input>
+                <FormItem label="正文" prop="type">
+                    <Input v-model="formItem.text"></Input>
                 </FormItem>
-                <FormItem label="参数名称" prop="name">
-                    <Input v-model="formItem.name"></Input>
-                </FormItem>
-                <FormItem label="参数值类型" prop="vtype">
-                    <Select v-model="formItem.vtype">
-                        <Option v-for="opt in vtypeOptions" :value="opt.value" :key="opt.value">{{opt.label}}</Option>
+
+                <FormItem label="重要程度" prop="type">
+                    <Select v-model="formItem.importantLevel">
+                        <Option v-for="opt in importantLevelOptions" :value="opt.value" :key="opt.value">{{opt.label}}
+                        </Option>
                     </Select>
-                </FormItem>
-                <FormItem label="参数值" prop="value">
-                    <Input v-model="formItem.value" :type="formItem.vtype != 'single' ? 'textarea' : 'text'" :placeholder="msg" :autosize="{minRows:3}">
-                    </Input>
-                </FormItem>
-                <FormItem label="备注" prop="remark">
-                    <Input v-model="formItem.remark"></Input>
                 </FormItem>
             </Form>
         </EditModal>
         <!-- 删除对话框 -->
-        <DeleteModal :modal="deleteModal" :params="tableOpts.selects" url="sysConfig/delete" @on-cancel="deleteModal=false" @on-ok="deleteModal=false;getTableData()">
+        <DeleteModal :modal="deleteModal" :params="tableOpts.selects" url="publicNotice/delete" @on-cancel="deleteModal = false" @on-ok="deleteOk">
         </DeleteModal>
     </div>
 </template>
 
 <script>
-  import {getParamsData, addUpdata} from '@/api/sys';
+  import {getPublicNotice, publicNoticeAddUpdate} from '@/api/sys';
 
   export default {
     name: 'params',
@@ -65,49 +51,32 @@
     data() {
       let columns = [
         {
-          title: '参数类型',
+          title: '类型',
           key: 'type',
-          formTrigger: 'change',
-          formType: 'select',
-          width: 100,
-          render: (h, params) => {
-            return h('span', this.$util.convertDic(this, params.row.type, 'typeOptions'));
-          }
-        },
-        {
-          title: '参数编码',
-          key: 'code',
-          formTrigger: 'blur',
-          formType: 'text',
-          width: 170,
-          tooltip: true
-        },
-        {
-          title: '参数名称',
-          key: 'name',
           formTrigger: 'blur',
           formType: 'text'
         },
         {
-          title: '参数值类型',
-          key: 'vtype',
-          formTrigger: 'change',
-          formType: 'select',
-          render: (h, params) => {
-            return h('span', this.$util.convertDic(this, params.row.vtype, 'vtypeOptions'));
-          }
+          title: '标题',
+          key: 'name',
+          formTrigger: 'blur',
+          formType: 'text'
+        }, {
+          title: '重要程度',
+          key: 'importantLevel',
+          formTrigger: 'blur',
+          formType: 'text'
         },
         {
-          title: '参数值',
+          title: '状态',
+          key: 'status',
+          formTrigger: 'blur',
+          formType: 'text'
+        },
+        {
+          title: '是否置顶',
           key: 'value',
           formTrigger: 'blur',
-          formType: 'text',
-          tooltip: true
-        },
-        {
-          title: '备注',
-          key: 'remark',
-          formTrigger: 'none',
           formType: 'text'
         },
         {
@@ -136,18 +105,15 @@
         btnList: [
           {
             text: ' 新增',
-            icon: 'add-copy',
-            permission: 'add'
+            icon: 'add-copy'
           },
           {
             text: ' 编辑',
-            icon: 'edit',
-            permission: 'edit'
+            icon: 'EditItemMapping'
           },
           {
             text: ' 删除',
-            icon: 'delete1',
-            permission: 'delete'
+            icon: 'delete1'
           }
         ],
         modal: false,
@@ -163,13 +129,25 @@
           value: '',
           remark: ''
         },
-        typeOptions: [],
-        vtypeOptions: [],
+        typeOptions: [
+          {value: '公告', label: '公告'},
+          {value: '通知', label: '通知'},
+          {value: '操作手册', label: '操作手册'}
+        ],
+        importantLevelOptions: [
+          {value: '普通', label: '普通'},
+          {value: '重要', label: '重要'},
+          {value: '非常重要', label: '非常重要'}
+        ],
+        vtypeOptions: [
+          {value: 'single', label: '单值'},
+          {value: 'range', label: '区间'},
+          {value: 'dictionary', label: '数据字典'}
+        ],
         deleteModal: false,
         codeSearch: '',
         nameSearch: '',
         typeSearch: '',
-        vtypeSearch: '',
         msg: '请输入……'
       };
     },
@@ -183,9 +161,9 @@
         if (newVal == 'single') {
           this.msg = '请输入……';
         } else if (newVal == 'range') {
-          this.msg = '格式：lower英文分号upper,如：12.34;34.56 (分号为英文符号)';
+          this.msg = '格式：lower英文分号upper,如：12.34;34.56';
         } else {
-          this.msg = '格式：key,value;key,value,如：apple,苹果;banana,香蕉 (逗号分号为英文符号)';
+          this.msg = '格式：key-value英文分号key-value,如：apple-苹果;banana-香蕉';
         }
       }
     },
@@ -196,8 +174,8 @@
       getTableData() {
         let params = this.$refs.paramsTable.getParams();
         this.tableOpts.loading = true;
-        params = {...params, ...{code: this.codeSearch, name: this.nameSearch, type: this.typeSearch, vtype: this.vtypeSearch}};
-        getParamsData(params).then(res => {
+        params = {...params, ...{}};
+        getPublicNotice(params).then(res => {
           if (this.$isSuccess(res)) {
             let data = res.data.data;
             this.tableOpts.tableData = data.dataList;
@@ -218,7 +196,7 @@
         let select = this.$refs.paramsTable.getSelects();
         if (select.length == 0) {
           this.$Message.error('请选择一条记录操作！');
-          return ;
+          return;
         }
         this.modal = true;
         this.isEdit = true;
@@ -229,7 +207,7 @@
         let select = this.$refs.paramsTable.getSelects();
         if (select.length == 0) {
           this.$Message.error('请选择一条记录操作！');
-          return ;
+          return;
         }
         this.tableOpts.selects = select;
         this.deleteModal = true;
@@ -238,13 +216,13 @@
         this.$refs.paramForm.validate(valid => {
           if (!valid) {
             this.$Message.error('请填写完整！');
-            return ;
+            return;
           }
           this.okLoading = true;
           let params = this.$util.copyObject(this.formItem);
-          // 获取当前用户
+          //   获取当前用户
           params.user = this.$Auth.getUserInfo();
-          addUpdata(this.formItem).then(res => {
+          publicNoticeAddUpdate(this.formItem).then(res => {
             if (this.$isSuccess(res)) {
               this.modal = false;
               this.$Message.success(res.data.msg);
@@ -252,29 +230,24 @@
               this.getTableData();
             }
             this.okLoading = false;
-
           });
         });
       },
+      deleteOk() {
+        this.deleteModal = false;
+        this.getTableData();
+      },
       setHeight() {
-        this.tableOpts.height = window.innerHeight - 220 - this.$refs.toolbar.getHeight();
+        this.tableOpts.height = window.innerHeight - 230 - this.$refs.toolbar.getHeight();
       }
-    },
-    beforeMount() {
-      this.$util.getDictionry(this, ['sys_config_type', 'sys_config_value_type']).then(data => {
-        if (data) {
-          this.typeOptions = data[0];
-          this.vtypeOptions = data[1];
-        }
-      });
     },
     mounted() {
       this.setHeight();
-      this.getTableData();
+      // this.getTableData();
       window.onresize = () => {
         // 通过捕获系统的onresize事件触发我们需要执行的事件
         this.setHeight();
-      }
+      };
     }
   };
 </script>

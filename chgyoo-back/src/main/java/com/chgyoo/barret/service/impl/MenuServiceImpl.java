@@ -39,6 +39,30 @@ public class MenuServiceImpl implements MenuService {
   @Override
   public List<TreeNode> getMenuData() {
     List<Menu> data = menuMapper.getMenuData();
+    // 处理路径参数
+    for (Menu menu : data) {
+      String[] pathArr = menu.getRouteUrl().split("/");
+      if (menu.getRouteUrl().indexOf(':') >= 0) {
+        int paramIndex = menu.getRouteUrl().lastIndexOf('/');
+        String[] paramArr = pathArr[pathArr.length - 1].split("&");
+        String url = menu.getRouteUrl().substring(0, paramIndex);
+        String paramPath = pathArr[pathArr.length - 2];
+        for (int i = 0; i < paramArr.length; i++) {
+          int index = paramArr[i].indexOf('=');
+          paramPath = paramPath + "/" + paramArr[i].substring(0, index);
+          url = url + "/" + paramArr[i].substring(index + 1);
+        }
+        menu.setRoutePath(paramPath);
+        menu.setUrl(url);
+        menu.setParam(true);
+        menu.setRouteFullPath(menu.getRouteUrl().substring(0, paramIndex));
+      } else {
+        menu.setParam(false);
+        menu.setUrl(menu.getRouteUrl());
+        menu.setRoutePath(pathArr[pathArr.length - 1]);
+        menu.setRouteFullPath(menu.getRouteUrl());
+      }
+    }
     List<TreeNode> re = TreeUtil.convertTreeData(data);
     setLast(re);
     return re;
@@ -57,6 +81,24 @@ public class MenuServiceImpl implements MenuService {
       // 新增菜单，自动增长
       Integer order = menuMapper.getOrder(menu.getParentId());
       menu.setMenuOrder(order != null ? order + 1 : 1);
+    }
+    // 判断是否是传参的路由
+    if (!"root".equals(menu.getParentId())) {
+      if (menu.getRouteUrl().indexOf(':') > 0) {
+        if (StringUtils.isEmpty(menu.getId()) || pidChange) {
+          Menu parentMenu = menuMapper.getMenuById(menu.getParentId());
+          menu.setMenuPath(parentMenu.getMenuPath());
+        }
+      } else {
+        menu.setMenuPath(menu.getRouteUrl());
+      }
+    } else {
+      String[] pathArr = menu.getRouteUrl().split("/");
+      if (pathArr.length == 3 && menu.getRouteUrl().indexOf(":") > 0) {
+        menu.setMenuPath("/");
+      } else {
+        menu.setMenuPath(menu.getRouteUrl());
+      }
     }
     if (StringUtils.isEmpty(menu.getId())) {
       menu.setId(Utils.createUUID());

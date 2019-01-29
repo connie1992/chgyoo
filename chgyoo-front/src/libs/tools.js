@@ -268,42 +268,88 @@ export const objEqual = (obj1, obj2) => {
   else return !keysArr1.some(key => obj1[key] != obj2[key]);
 };
 
+
+const findMenuPathIcon = (menuPath, routers) => {
+  let res = [];
+  if (!(menuPath == '/' || menuPath == '')) {
+    let menuPathArr = menuPath.split('/');
+    let menuRoutePathArr = [];
+    for (let i = 1; i < menuPathArr.length; i++) {
+      menuRoutePathArr.push(i == 1 ? `/${menuPathArr[i]}` : `${menuRoutePathArr[i - 2]}/${menuPathArr[i]}`);
+    }
+
+    for (let i = 0; i < routers.length; i++) {
+      if (routers[i].path == menuRoutePathArr[0]) {
+        let obj = {
+          icon: (routers[i].meta && routers[i].meta.icon) || '',
+          name: routers[i].path,
+          meta: {title: routers[i].meta.titleMap[menuRoutePathArr[0]]}
+        };
+        res.push(obj);
+        let children = routers[i].children;
+        for (let j = 1; j < menuRoutePathArr.length; j++) {
+          let item = children[j - 1];
+          res.push({
+            icon: (item.meta && item.meta.icon) || '',
+            name: item.url,
+            meta: {title: item.meta.titleMap[menuRoutePathArr[j]]}
+          });
+        }
+        break;
+      }
+    }
+  }
+  return res;
+};
+
+const getFirstValue = (obj) => {
+  for (let key in obj) {
+    return obj[key];
+  }
+};
 /**
  *
  * @param routeMetched
  * @param homeRoute
  * @returns {gaodachuan}
  */
-export const getBreadCrumbList = (routeMetched, homeRoute) => {
+export const getBreadCrumbList = (routeMetched, homeRoute, route, routers) => {
   // 判断当前路径是不是主页，如果是主页的话只需要homeRoute即可
-  let routeArr = [];
-  routeMetched.forEach((item) => {
-    if (!(item.path == '/' || item.path == '')) {
-      routeArr.push(item);
-    }
-  });
-  let res = routeArr.filter(item => {
-    return item.meta === undefined || !item.meta.hide;
-  }).map(item => {
-    let obj = {
-      icon: (item.meta && item.meta.icon) || '',
-      name: item.path,
-      meta: item.meta
-    };
-    return obj;
-  });
-  res = res.filter(item => {
-    return !item.meta.hideInMenu;
-  });
-  res = res.filter(item => {
-    return item.name != '/home';
-  });
   let home = {
     icon: (homeRoute.meta && homeRoute.meta.icon) || '',
     name: homeRoute.path,
-    meta: homeRoute.meta,
-    to: homeRoute.path
+    meta: homeRoute.meta
   };
+  let res = [];
+  if (route.path != '/home') {
+    if (route.name.indexOf(':') > 0) {
+      // 带参数的路由
+      res = findMenuPathIcon(route.meta.menuPathMap[route.path], routers);
+      res.push({
+        icon: route.meta.iconMap[route.path],
+        name: route.path,
+        meta: {title: route.meta.titleMap[route.path]}
+      });
+    } else {
+      let routeArr = [];
+      routeMetched.forEach((item) => {
+        if (!(item.path == '/' || item.path == '')) {
+          routeArr.push(item);
+        }
+      });
+      res = routeArr.filter(item => {
+        return item.meta === undefined || !item.meta.hide;
+      }).map(item => {
+        let obj = {
+          icon: (item.meta && item.meta.icon) || '',
+          name: item.path,
+          meta: {title : (item.meta ? (item.meta.title ? item.meta.title : (item.meta.titleMap ? getFirstValue(item.meta.titleMap) : '')) : '')}
+        };
+        return obj;
+      });
+    }
+    home.to = homeRoute.path;
+  }
   return [home, ...res];
 };
 
@@ -311,14 +357,14 @@ export const getBreadCrumbList = (routeMetched, homeRoute) => {
  * @param {Array} routers 路由列表数组
  * @description 用于找到路由列表中name为home的对象
  */
-export const findRoute = (routers, name) => {
+export const findRoute = (routers, name, path, bindingValue) => {
   let target = null;
   for (let i = 0; i < routers.length; i++) {
     if (routers[i].name == name) {
-      target = routers[i].meta.permission;
+      target = routers[i].meta.permissionMap[path];
       break;
     } else if (routers[i].children && routers[i].children.length > 0) {
-      target = findRoute(routers[i].children, name);
+      target = findRoute(routers[i].children, name, path);
       if (target !== null) {
         break ;
       }
@@ -326,5 +372,3 @@ export const findRoute = (routers, name) => {
   }
   return target;
 };
-
-

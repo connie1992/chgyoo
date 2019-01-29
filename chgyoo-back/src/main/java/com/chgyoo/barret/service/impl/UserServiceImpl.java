@@ -1,5 +1,6 @@
 package com.chgyoo.barret.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -104,6 +105,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public Map<String, Object> getSelectRole(Command command) {
+    SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");
     // 获取所有在生效的角色
     List<Role> allRoles = menuMapper.getActiveRole();
     List<String> selectRoleIds = new ArrayList<>();
@@ -112,7 +114,9 @@ public class UserServiceImpl implements UserService {
     List<Role> selected = userMapper.getSelectRole(params);
     List<RoleFmt> roleList = new ArrayList<>();
     for (Role role : allRoles) {
-      makeRoleFmt(roleList, role, false, "");
+      if (sd.format(role.getCreateTime()).compareTo(sd.format(new Date())) <= 0) {
+        makeRoleFmt(roleList, role, false, "");
+      }
     }
     // 处理已失效的角色
     for (Role role : selected) {
@@ -126,6 +130,8 @@ public class UserServiceImpl implements UserService {
       }
       if (i == allRoles.size()) {
         makeRoleFmt(roleList, role, true, "（已失效）");
+      } else if (sd.format(role.getCreateTime()).compareTo(sd.format(new Date())) > 0) {
+        makeRoleFmt(roleList, role, true, "（未开始）");
       }
     }
 
@@ -134,6 +140,7 @@ public class UserServiceImpl implements UserService {
       List<Role> userGroupRole = getGroupRole(command.getId(), command.getType() == Constant.USER);
       for (Role disabled : userGroupRole) {
         int i = 0;
+        // 查找用户的角色有没有和组角色重叠
         for (; i < roleList.size(); i++) {
           RoleFmt roleFmt = roleList.get(i);
           if (roleFmt.getKey().equals(disabled.getId())) {
@@ -145,6 +152,7 @@ public class UserServiceImpl implements UserService {
         if (i == roleList.size()) {
           makeRoleFmt(roleList, disabled, true, "（父组织角色）");
         }
+        // 将父组织角色移到最上面
         if (selectRoleIds.contains(disabled.getId())) {
           selectRoleIds.remove(disabled.getId());
         }
@@ -158,6 +166,7 @@ public class UserServiceImpl implements UserService {
   }
 
   private List<Role> getGroupRole(String id, boolean isUser) {
+    // 获取组织路径，考虑到一个用户如果有多个组织架构信息，所以这里采用的是数组
     List<String> paths = userMapper.getDeptPath(id, isUser);
     List<String> depts = new ArrayList<>();
     for (int i = 0; i < paths.size(); i++) {
@@ -330,8 +339,7 @@ public class UserServiceImpl implements UserService {
           }
         }
         String pathDetailStr = pathDetail.toString();
-        deptUser.setDetail(
-            StringUtils.isEmpty(pathDetailStr) ? pathDetailStr : pathDetail.substring(0, pathDetail.length() - 2));
+        deptUser.setDetail(StringUtils.isEmpty(pathDetailStr) ? pathDetailStr : pathDetail.substring(0, pathDetail.length() - 2));
       }
     }
     return resultTree;
@@ -360,9 +368,6 @@ public class UserServiceImpl implements UserService {
 
   @Override public Map<String, Object> getUserInfo(Command command) {
     User user = userMapper.getUserByAccount(command.getAccount());
-    if (user == null) {
-      return null;
-    }
     if (!Constant.CUSTOMER_USER.equals(user.getCustom())) {
       List<Department> depts = userMapper.getDepartmentByUser(user.getId());
       // 这里需要考虑当一个用户对应多个组织时，前台需要显示的部门信息需要处理一下
@@ -406,9 +411,9 @@ public class UserServiceImpl implements UserService {
     List<String> roleIds= new ArrayList<>();
     for (int i = 0; i < data.size(); i++) {
       RoleFmt roleFmt = data.get(i);
-       if (target.contains(roleFmt.getKey()) && !(roleFmt.getLabel().indexOf("过期") >= 0)) {
-         roleIds.add(roleFmt.getKey());
-       }
+      if (target.contains(roleFmt.getKey()) && !(roleFmt.getLabel().indexOf("过期") >= 0) && !(roleFmt.getLabel().indexOf("未开始") >= 0)) {
+        roleIds.add(roleFmt.getKey());
+      }
     }
     if (roleIds.size() == 0) {
       return new ArrayList<>();

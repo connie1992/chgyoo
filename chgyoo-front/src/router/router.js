@@ -18,23 +18,27 @@ export const routers = [
         children: [{
           path: '404-1',
           component: (resolve) => require(['../views/error/testrouter'], resolve)
-        }]
+        }],
+        meta: {
+          title: ''
+        }
       },
       {
         path: '500',
-        component: (resolve) => require(['../views/error/500'], resolve)
+        component: (resolve) => require(['../views/error/500'], resolve),
+        meta: {
+          title: '服务器内部错误'
+        }
       }
     ]
-  },
-  {
+  }, {
     path: '/login',
     name: 'login',
     meta: {
       title: 'Login - 登录'
     },
     component: (resolve) => require(['../views/login'], resolve)
-  },
-  {
+  }, {
     path: '/iconfont',
     component: (resolve) => require(['../assets//iconfont/icon-demo'], resolve),
     name: 'iconfont',
@@ -52,6 +56,7 @@ export const homeRoute = {
   component: (resolve) => require(['../views/home'], resolve),
   meta: {
     icon: ' iconfont icon-tubiao115',
-    title: '主页'
+    title: '主页',
+    url: '/home'
   }
 };

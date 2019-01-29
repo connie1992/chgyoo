@@ -22,12 +22,16 @@
                                                     :fontSize="12"></custom-bread-crumb>
                                 </div>
                                 <Divider/>
+                                <!--<transition name="fade">-->
                                 <keep-alive>
-                                    <!--页面切换动画效果-->
-                                    <!--<transition name="fade">-->
-                                        <router-view></router-view>
-                                    <!--</transition>-->
+                                   <!--页面切换动画效果-->
+                                   <router-view></router-view>
                                 </keep-alive>
+                                <!--</transition>-->
+                                <!--<keep-alive>
+                                    <router-view v-if="$route.meta.keepAlive"></router-view>
+                                </keep-alive>
+                                <router-view v-if="!$route.meta.keepAlive"></router-view>-->
                             </div>
                         </Card>
                     </Content>
@@ -164,9 +168,15 @@
     },
     watch: {
       '$route'(newRoute) {
-        // console.log('路由改变……');
-        // console.log(newRoute);
-        this.$store.commit('setBreadCrumb', newRoute.matched);
+        console.log('路由改变……');
+        // 路由切换时判断是否需要刷新数据
+        let vmMap = this.$store.state.data.vmMap;
+        if (vmMap[newRoute.path]) {
+          vmMap[newRoute.path].forEach(vm => {
+            vm.search();
+          });
+        }
+        this.$store.commit('setBreadCrumb', {matched: this.$route.matched, route: newRoute});
       },
       language() {
         this.$i18n.locale = this.language;
@@ -178,10 +188,10 @@
       }
     },
     mounted() {
-      this.$store.commit('setBreadCrumb', this.$route.matched);
+      this.$store.commit('setBreadCrumb', {matched: this.$route.matched, route: this.$route});
     },
     created() {
-      console.log('index界面create……');
+      // console.log('index界面create……');
       if (Cookie.get('csotlanguage')) {
         this.$i18n.locale = Cookie.get('csotlanguage');
         this.language = Cookie.get('csotlanguage');
@@ -190,8 +200,6 @@
         this.pageSize = Cookie.get('tddopagesize');
       }
       // 这些变量没有设置成计算属性是因为，index界面所在的router-view是不缓存的，每一次重新登录进来都会重新create一次
-      console.log('菜单数据为：');
-      console.log(this.$store.getters.getMenuTree);
       this.menuList = this.$store.getters.getMenuTree;
       this.userInfo = this.$store.getters.getUserInfo;
       this.book = this.userInfo.book;

@@ -43,7 +43,6 @@ public class RoleServiceImpl implements RoleService {
   public void addOrUpdate(Role role) {
     if (StringUtils.isEmpty(role.getId())) {
       role.setId(Utils.createUUID());
-      role.setCreateTime(new Date());
       menuMapper.insertRole(role);
     } else {
       menuMapper.updateRole(role);

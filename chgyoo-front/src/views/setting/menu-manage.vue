@@ -154,7 +154,7 @@
             headerAlign: 'center',
             template: 'icon',
             type: 'template',
-            width: '150px',
+            width: '50px',
             minWidth: '150px'
           },
           {

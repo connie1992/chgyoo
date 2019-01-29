@@ -13,7 +13,7 @@ module.exports = {
     proxyTable: {
       '/permission': {
         // target: 'http://10.108.15.33:8762',  //目标接口域名
-        target: 'http://10.108.15.33:8762',  //目标接口域名
+        target: 'http://10.108.215.118:8762',  //目标接口域名
         changeOrigin: true,  //是否跨域
       }
     },
@@ -22,8 +22,9 @@ module.exports = {
 
     // can be overwritten by process.env.HOST
     // if you want dev by ip, please set host: '0.0.0.0'
+    // host: '10.108.215.118',
     host: 'localhost',
-    port: 18080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: true,
     errorOverlay: true,
     notifyOnErrors: false,
