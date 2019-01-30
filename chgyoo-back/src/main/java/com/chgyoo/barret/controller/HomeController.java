@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  * Date: 2019/1/8
  */
 @RestController
-@RequestMapping("/web")
+@RequestMapping("/home")
 public class HomeController extends BaseController {
 
     @RequestMapping("/index")
@@ -96,4 +96,5 @@ public class HomeController extends BaseController {
         resp.setMessage("服务器异常");
         return resp;
     }
+
 }

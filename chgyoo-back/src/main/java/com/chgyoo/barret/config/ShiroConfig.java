@@ -1,5 +1,6 @@
 package com.chgyoo.barret.config;
 
+import com.chgyoo.barret.filter.CORSAuthenticationFilter;
 import com.chgyoo.barret.mapper.RoleMapper;
 import com.chgyoo.barret.service.RoleService;
 import com.chgyoo.barret.service.UserService;
@@ -9,18 +10,23 @@ import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.mgt.SessionManager;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import javax.annotation.Resource;
+import javax.servlet.Filter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -58,8 +64,8 @@ public class ShiroConfig {
         Map<String,String> filterChainDefinitionMap = new LinkedHashMap<String,String>();
         //注意过滤器配置顺序 不能颠倒
         //anon. 配置不会被拦截的请求 顺序判断
-        filterChainDefinitionMap.put("/web/logout", "anon");
-        filterChainDefinitionMap.put("/web/login", "anon");
+        filterChainDefinitionMap.put("/home/logout", "anon");
+        filterChainDefinitionMap.put("/home/login", "anon");
         //authc. 配置拦截的请求
         // filterChainDefinitionMap.put("/permission/**", "authc");
 
@@ -71,11 +77,19 @@ public class ShiroConfig {
 
         filterChainDefinitionMap.put("/permission/**", "authc,roles[admin]");//用户为ROLE_USER 角色可以访问。由用户角色控制用户行为。
 //        filterChainDefinitionMap.put("/user/edit/**", "authc,perms[user:edit]");// 这里为了测试，固定写死的值，也可以从数据库或其他配置中读取，此处是用权限控制
+        filterChainDefinitionMap.put("/**", "corsAuthenticationFilter");
 
 
         //配置shiro默认登录界面地址，前后端分离中登录界面跳转应由前端路由控制，后台仅返回json数据
-//        shiroFilterFactoryBean.setLoginUrl("/web/unauth");
+        shiroFilterFactoryBean.setLoginUrl("/home/unauth");
+//        shiroFilterFactoryBean.setSuccessUrl("/home");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+
+        //自定义过滤器
+        Map<String, Filter> filterMap = new LinkedHashMap<>();
+        filterMap.put("corsAuthenticationFilter", new CORSAuthenticationFilter());
+        shiroFilterFactoryBean.setFilters(filterMap);
+
         return shiroFilterFactoryBean;
     }
 
@@ -89,7 +103,7 @@ public class ShiroConfig {
     public SecurityManager securityManager() {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(myShiroRealm());
-        securityManager.setSessionManager(sessionManager());
+        //securityManager.setSessionManager(sessionManager());
         //注入记住我管理器
         securityManager.setRememberMeManager(rememberMeManager());
         return securityManager;
@@ -172,5 +186,32 @@ public class ShiroConfig {
         cookieRememberMeManager.setCookie(rememberMeCookie());
         cookieRememberMeManager.setCipherKey(Base64.decode("one"));
         return cookieRememberMeManager;
+    }
+
+
+    /**
+     * Shiro生命周期处理器 * @return
+     */
+    @Bean
+    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
+        return new LifecycleBeanPostProcessor();
+    }
+
+    /**
+     * 开启Shiro的注解(如@RequiresRoles,@RequiresPermissions),需借助SpringAOP扫描使用Shiro注解的类,并在必要时进行安全逻辑验证 * 配置以下两个bean(DefaultAdvisorAutoProxyCreator(可选)和AuthorizationAttributeSourceAdvisor)即可实现此功能 * @return
+     */
+    @Bean
+    @DependsOn({"lifecycleBeanPostProcessor"})
+    public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
+        DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
+        advisorAutoProxyCreator.setProxyTargetClass(true);
+        return advisorAutoProxyCreator;
+    }
+
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
+        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
+        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
+        return authorizationAttributeSourceAdvisor;
     }
 }
