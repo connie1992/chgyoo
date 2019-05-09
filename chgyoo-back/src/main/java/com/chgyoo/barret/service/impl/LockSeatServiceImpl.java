@@ -31,10 +31,18 @@ public class LockSeatServiceImpl implements LockSeatService {
         try {
             if (StringUtils.isEmpty(weixinId) || seatIds.length < 1) return false;
 
+            int count = 0;
+
             // 选座加锁
             lock = redisUtil.tryLock(LOCK, CLIENT_ID, 30);
 
-            // 如果有人正在选座，则返回
+            // 如果有人正在选座，重试10次
+            while (count < 10 && !lock) {
+                Thread.currentThread().sleep(100);
+                lock = redisUtil.tryLock(LOCK, CLIENT_ID, 30);
+                count++;
+            }
+
             if (!lock) return false;
 
             boolean result = true;
